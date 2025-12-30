@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { updateDailyReturns } = require('./jobs/dailyReturns');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -119,6 +120,10 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
+  
+  // Start daily returns cron job
+  updateDailyReturns.start();
+  console.log('Daily returns cron job started');
 });
 
 module.exports = app;

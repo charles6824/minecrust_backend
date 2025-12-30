@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { auth, adminAuth } = require('../middleware/auth');
+const { validatePackage } = require('../middleware/validation');
 const {
   getDashboardStats,
   getUsers,
@@ -347,8 +348,8 @@ router.patch('/transactions/:id/process', auth, adminAuth, processTransaction);
 router.get('/investments', auth, adminAuth, getAllInvestments);
 
 // Package management routes
-router.post('/packages', auth, adminAuth, createPackage);
-router.put('/packages/:id', auth, adminAuth, updatePackage);
+router.post('/packages', auth, adminAuth, validatePackage, createPackage);
+router.put('/packages/:id', auth, adminAuth, validatePackage, updatePackage);
 router.delete('/packages/:id', auth, adminAuth, deletePackage);
 router.patch('/packages/:id/toggle', auth, adminAuth, togglePackageStatus);
 

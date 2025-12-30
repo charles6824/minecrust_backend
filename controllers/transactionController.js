@@ -91,12 +91,14 @@ const createDeposit = async (req, res) => {
   }
 };
 
-// @desc    Create withdrawal transaction
-// @route   POST /api/transactions/withdrawal
-// @access  Private
 const createWithdrawal = async (req, res) => {
   try {
-    const { amount, method, walletAddress } = req.body;
+    const { amount, method, address, walletAddress } = req.body;
+    const finalAddress = address || walletAddress;
+
+    if (!finalAddress) {
+      return res.status(400).json({ message: 'Wallet address is required' });
+    }
 
     // Check user balance
     const user = await User.findById(req.user.id);
@@ -114,7 +116,7 @@ const createWithdrawal = async (req, res) => {
       type: 'withdrawal',
       amount,
       method,
-      walletAddress,
+      walletAddress: finalAddress,
       fee,
       netAmount,
       status: 'pending'

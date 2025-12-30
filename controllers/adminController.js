@@ -364,6 +364,12 @@ const createPackage = async (req, res) => {
     });
   } catch (error) {
     console.error('Create package error:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -389,6 +395,12 @@ const updatePackage = async (req, res) => {
     });
   } catch (error) {
     console.error('Update package error:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 };

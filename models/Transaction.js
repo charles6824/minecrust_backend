@@ -73,7 +73,7 @@ const transactionSchema = new mongoose.Schema({
   },
   method: {
     type: String,
-    enum: ['crypto', 'paypal', 'bank_transfer', 'internal'],
+    enum: ['crypto', 'paypal', 'bank_transfer', 'internal', 'btc', 'eth', 'usdt', 'trx', 'sol'],
     required: true
   },
   reference: {

@@ -90,8 +90,18 @@ const validateTransaction = [
     .isFloat({ min: 0 })
     .withMessage('Amount must be a positive number'),
   body('method')
-    .isIn(['crypto', 'paypal', 'bank_transfer'])
+    .isIn(['crypto', 'paypal', 'bank_transfer', 'btc', 'eth', 'trx', 'usdt'])
     .withMessage('Invalid payment method'),
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ min: 10 })
+    .withMessage('Invalid wallet address'),
+  body('walletAddress')
+    .optional()
+    .trim()
+    .isLength({ min: 10 })
+    .withMessage('Invalid wallet address'),
   handleValidationErrors
 ];
 
