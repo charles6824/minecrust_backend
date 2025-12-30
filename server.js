@@ -31,7 +31,10 @@ app.use(limiter);
 
 // CORS configuration
 const corsOptions = {
-	origin: process.env.FRONTEND_URL || "http://localhost:8080",
+	origin: [
+		process.env.FRONTEND_URL || "http://localhost:8080",
+		"https://minecrusttrading.vercel.app"
+	],
 	credentials: true,
 	optionsSuccessStatus: 200,
 };
