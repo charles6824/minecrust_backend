@@ -20,8 +20,26 @@ const chatRoutes = require("./routes/chat");
 
 const app = express();
 
+// CORS configuration - Must be before other middleware
+const corsOptions = {
+	origin: [
+		process.env.FRONTEND_URL || "http://localhost:8080",
+		"http://localhost:7000",
+		"http://localhost:8080",
+		"https://minecrust-backend.onrender.com",
+		"https://minecrusttrading.vercel.app"
+	],
+	credentials: true,
+	optionsSuccessStatus: 200,
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+app.use(cors(corsOptions));
+
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+	crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -29,17 +47,6 @@ const limiter = rateLimit({
 	max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
-
-// CORS configuration
-const corsOptions = {
-	origin: [
-		process.env.FRONTEND_URL || "http://localhost:8080",
-		"https://minecrusttrading.vercel.app"
-	],
-	credentials: true,
-	optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
