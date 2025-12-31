@@ -79,13 +79,11 @@ const verifyOTP = async (req, res) => {
     }
 
     // Create user
-    const walletId = crypto.randomBytes(16).toString('hex');
     const user = new User({
       email,
       password,
       firstName,
       lastName,
-      walletId,
       isVerified: true
     });
 
