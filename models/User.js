@@ -141,7 +141,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     default: function() {
-      return 'MCT' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      // Generate format: MCT + 2 random digits + random letter + random digit + random letter + random letter
+      const digits = Math.floor(Math.random() * 90) + 10; // 10-99
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const letter1 = letters[Math.floor(Math.random() * letters.length)];
+      const digit = Math.floor(Math.random() * 10);
+      const letter2 = letters[Math.floor(Math.random() * letters.length)];
+      const letter3 = letters[Math.floor(Math.random() * letters.length)];
+      return `MCT${digits}${letter1}${digit}${letter2}${letter3}`;
     }
   },
   walletType: {
