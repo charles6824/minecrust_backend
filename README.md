@@ -239,7 +239,7 @@ After running the seeder:
 
 **Admin Account:**
 
-- Email: `admin@cryptoinvest.com`
+- Email: `admin@minecrusttrading.com`
 - Password: `admin123`
 
 **Test User Accounts:**
@@ -299,6 +299,6 @@ This project is licensed under the MIT License.
 
 For support and questions:
 
-- Email: support@cryptoinvest.com
+- Email: support@minecrusttrading.com
 - Documentation: `/api-docs`
 - Health Check: `/api/health`

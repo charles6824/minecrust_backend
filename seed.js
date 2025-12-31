@@ -252,7 +252,7 @@ const seedDatabase = async () => {
 
     console.log('Database seeded successfully!');
     console.log('\nLogin credentials:');
-    console.log('Admin: admin@cryptoinvest.com / admin123');
+    console.log("Admin: admin@minecrusttrading.com / admin123");
     console.log('User: john.doe@example.com / password123');
     console.log('User: jane.smith@example.com / password123');
 

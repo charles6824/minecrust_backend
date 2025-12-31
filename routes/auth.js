@@ -4,6 +4,7 @@ const { auth } = require('../middleware/auth');
 const { validateRegistration, validateLogin, validateProfileUpdate } = require('../middleware/validation');
 const {
   register,
+  verifyOTP,
   login,
   getMe,
   updateProfile,
@@ -63,6 +64,34 @@ const {
  *         description: Validation error or user already exists
  */
 router.post('/register', validateRegistration, register);
+
+/**
+ * @swagger
+ * /api/auth/verify-otp:
+ *   post:
+ *     summary: Verify OTP and complete registration
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tempToken
+ *               - otp
+ *             properties:
+ *               tempToken:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Registration completed successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ */
+router.post('/verify-otp', verifyOTP);
 
 /**
  * @swagger

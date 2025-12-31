@@ -119,7 +119,7 @@ const validateProfileUpdate = [
     .withMessage('Last name must be at least 2 characters long'),
   body('phone')
     .optional()
-    .isMobilePhone()
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
     .withMessage('Please provide a valid phone number'),
   body('cryptoWallet')
     .optional()

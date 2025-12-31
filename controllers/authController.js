@@ -1,6 +1,14 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const OTP = require('../models/OTP');
+const { sendEmail } = require('../services/emailService');
 const { generateToken } = require('../utils/helpers');
+const crypto = require('crypto');
+
+// Generate OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 // Generate JWT token
 const generateAuthToken = (userId) => {
@@ -22,21 +30,81 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
+    // Generate OTP
+    const otp = generateOTP();
+    
+    // Save OTP
+    await OTP.findOneAndDelete({ email }); // Remove any existing OTP
+    const otpDoc = new OTP({ email, otp });
+    await otpDoc.save();
+
+    // Send OTP email
+    await sendEmail(email, 'otp', firstName, otp);
+
+    // Store user data temporarily
+    const tempUserData = {
+      email,
+      password,
+      firstName,
+      lastName,
+      timestamp: Date.now()
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'OTP sent to your email',
+      tempToken: jwt.sign(tempUserData, process.env.JWT_SECRET, { expiresIn: '15m' })
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error during registration' });
+  }
+};
+
+// @desc    Verify OTP and complete registration
+// @route   POST /api/auth/verify-otp
+// @access  Public
+const verifyOTP = async (req, res) => {
+  try {
+    const { tempToken, otp } = req.body;
+
+    // Verify temp token
+    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    const { email, password, firstName, lastName } = decoded;
+
+    // Verify OTP
+    const otpDoc = await OTP.findOne({ email, otp, verified: false });
+    if (!otpDoc || otpDoc.expiresAt < new Date()) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
     // Create user
+    const walletId = crypto.randomBytes(16).toString('hex');
     const user = new User({
       email,
       password,
       firstName,
-      lastName
+      lastName,
+      walletId,
+      isVerified: true
     });
 
     await user.save();
+    
+    // Mark OTP as verified
+    otpDoc.verified = true;
+    await otpDoc.save();
 
-    // Generate token
+    // Send welcome emails
+    await sendEmail(email, 'registration', firstName);
+    await sendEmail(process.env.ADMIN_EMAIL, 'adminNotification', 'Registration', email, `${firstName} ${lastName}`);
+
+    // Generate JWT
     const token = generateAuthToken(user._id);
 
     res.status(201).json({
-      message: 'User registered successfully',
+      success: true,
+      message: 'Registration successful',
       token,
       user: {
         id: user._id,
@@ -44,16 +112,17 @@ const register = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        isVerified: user.isVerified,
+        walletId: user.walletId,
         balance: user.balance,
+        isVerified: user.isVerified,
         hasCompletedSetup: user.hasCompletedSetup,
         isActive: user.isActive,
         joinDate: user.createdAt
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    console.error('OTP verification error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -244,6 +313,7 @@ const changePassword = async (req, res) => {
 
 module.exports = {
   register,
+  verifyOTP,
   login,
   getMe,
   updateProfile,

@@ -453,10 +453,43 @@ const togglePackageStatus = async (req, res) => {
   }
 };
 
+// @desc    Delete user
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === 'admin') {
+      return res.status(400).json({ message: 'Cannot delete admin user' });
+    }
+
+    // Delete related data
+    await Transaction.deleteMany({ userId: user._id });
+    await Investment.deleteMany({ userId: user._id });
+    
+    // Delete the user
+    await user.deleteOne();
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getUsers,
   updateUserStatus,
+  deleteUser,
   getAllTransactions,
   processTransaction,
   getAllInvestments,

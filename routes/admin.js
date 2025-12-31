@@ -6,6 +6,7 @@ const {
   getDashboardStats,
   getUsers,
   updateUserStatus,
+  deleteUser,
   getAllTransactions,
   processTransaction,
   getAllInvestments,
@@ -177,6 +178,35 @@ router.get('/users', auth, adminAuth, getUsers);
  *         description: Admin access required
  */
 router.patch('/users/:id/status', auth, adminAuth, updateUserStatus);
+
+/**
+ * @swagger
+ * /api/admin/users/{id}:
+ *   delete:
+ *     summary: Delete user (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       400:
+ *         description: Cannot delete admin user
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin access required
+ */
+router.delete('/users/:id', auth, adminAuth, deleteUser);
 
 /**
  * @swagger
