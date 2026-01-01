@@ -27,7 +27,8 @@ const corsOptions = {
 		"http://localhost:7000",
 		"http://localhost:8080",
 		"https://minecrust-backend.onrender.com",
-		"https://minecrusttrading.vercel.app"
+		"https://minecrusttrading.vercel.app",
+		"https://minecrusttrading.com"
 	],
 	credentials: true,
 	optionsSuccessStatus: 200,
