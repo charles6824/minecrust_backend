@@ -20,6 +20,9 @@ const chatRoutes = require("./routes/chat");
 
 const app = express();
 
+// Trust proxy - Required for rate limiting behind reverse proxy (Render)
+app.set('trust proxy', 1);
+
 // CORS configuration - Must be before other middleware
 const corsOptions = {
 	origin: [
