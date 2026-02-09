@@ -453,6 +453,107 @@ const togglePackageStatus = async (req, res) => {
   }
 };
 
+// @desc    Complete investment manually
+// @route   PATCH /api/admin/investments/:id/complete
+// @access  Private/Admin
+const completeInvestment = async (req, res) => {
+  try {
+    const investment = await Investment.findById(req.params.id)
+      .populate('userId', 'firstName lastName email balance')
+      .populate('packageId', 'name roi duration');
+
+    if (!investment) {
+      return res.status(404).json({ message: 'Investment not found' });
+    }
+
+    if (investment.status === 'completed') {
+      return res.status(400).json({ message: 'Investment already completed' });
+    }
+
+    if (investment.status !== 'active' && investment.status !== 'pending') {
+      return res.status(400).json({ message: 'Only active or pending investments can be completed' });
+    }
+
+    // Calculate final returns
+    const daysElapsed = Math.floor((new Date() - investment.startDate) / (1000 * 60 * 60 * 24));
+    const totalDays = Math.min(daysElapsed, investment.packageId.duration);
+    const dailyRate = investment.packageId.roi / 100 / investment.packageId.duration;
+    const finalReturns = investment.amount * dailyRate * totalDays;
+    const finalValue = investment.amount + finalReturns;
+
+    // Update investment
+    investment.status = 'completed';
+    investment.currentValue = finalValue;
+    investment.totalReturns = finalReturns;
+    investment.lastCalculated = new Date();
+    await investment.save();
+
+    // Update user balance
+    const user = await User.findById(investment.userId._id);
+    user.balance += finalValue;
+    await user.save();
+
+    // Create return transaction
+    const transaction = new Transaction({
+      userId: investment.userId._id,
+      type: 'return',
+      amount: finalValue,
+      status: 'approved',
+      method: 'internal',
+      adminNotes: `Investment completed manually by admin - ${investment.packageId.name}`,
+      processedBy: req.user.id,
+      processedAt: new Date()
+    });
+    await transaction.save();
+
+    res.json({
+      success: true,
+      message: 'Investment completed successfully',
+      data: {
+        investment,
+        finalValue,
+        totalReturns: finalReturns,
+        userNewBalance: user.balance
+      }
+    });
+  } catch (error) {
+    console.error('Complete investment error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Activate pending investment
+// @route   PATCH /api/admin/investments/:id/activate
+// @access  Private/Admin
+const activateInvestment = async (req, res) => {
+  try {
+    const investment = await Investment.findById(req.params.id)
+      .populate('packageId', 'name');
+
+    if (!investment) {
+      return res.status(404).json({ message: 'Investment not found' });
+    }
+
+    if (investment.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending investments can be activated' });
+    }
+
+    investment.status = 'active';
+    investment.approvedBy = req.user.id;
+    investment.approvedAt = new Date();
+    await investment.save();
+
+    res.json({
+      success: true,
+      message: 'Investment activated successfully',
+      data: investment
+    });
+  } catch (error) {
+    console.error('Activate investment error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // @desc    Delete user
 // @route   DELETE /api/admin/users/:id
 // @access  Private/Admin
@@ -497,5 +598,7 @@ module.exports = {
   createPackage,
   updatePackage,
   deletePackage,
-  togglePackageStatus
+  togglePackageStatus,
+  completeInvestment,
+  activateInvestment
 };

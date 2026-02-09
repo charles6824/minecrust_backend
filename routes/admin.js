@@ -14,7 +14,9 @@ const {
   createPackage,
   updatePackage,
   deletePackage,
-  togglePackageStatus
+  togglePackageStatus,
+  completeInvestment,
+  activateInvestment
 } = require('../controllers/adminController');
 const { updatePaymentConfig } = require('../controllers/paymentConfigController');
 
@@ -376,6 +378,56 @@ router.patch('/transactions/:id/process', auth, adminAuth, processTransaction);
  *         description: Admin access required
  */
 router.get('/investments', auth, adminAuth, getAllInvestments);
+
+/**
+ * @swagger
+ * /api/admin/investments/{id}/complete:
+ *   patch:
+ *     summary: Complete investment manually (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Investment ID
+ *     responses:
+ *       200:
+ *         description: Investment completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     investment:
+ *                       $ref: '#/components/schemas/Investment'
+ *                     finalValue:
+ *                       type: number
+ *                     totalReturns:
+ *                       type: number
+ *                     userNewBalance:
+ *                       type: number
+ *       400:
+ *         description: Investment already completed or not active/pending
+ *       404:
+ *         description: Investment not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin access required
+ */
+router.patch('/investments/:id/complete', auth, adminAuth, completeInvestment);
+router.patch('/investments/:id/activate', auth, adminAuth, activateInvestment);
 
 // Package management routes
 router.post('/packages', auth, adminAuth, validatePackage, createPackage);

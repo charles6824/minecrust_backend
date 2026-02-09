@@ -5,7 +5,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-const { updateDailyReturns } = require("./jobs/dailyReturns");
+const { updateDailyReturns, processInvestments } = require("./jobs/dailyReturns");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
@@ -28,10 +28,7 @@ const corsOptions = {
 	origin: [
 		process.env.FRONTEND_URL || "http://localhost:8080",
 		"http://localhost:7000",
-		"http://localhost:8080",
-		"https://minecrust-backend.onrender.com",
-		"https://minecrusttrading.vercel.app",
-		"https://minecrusttrading.com"
+		"http://localhost:8080"
 	],
 	credentials: true,
 	optionsSuccessStatus: 200,
@@ -146,7 +143,10 @@ app.listen(PORT, () => {
 
 	// Start daily returns cron job
 	updateDailyReturns.start();
-	console.log("Daily returns cron job started");
+	console.log("Investment processing cron job started (runs every 6 hours)");
+	
+	// Run immediately on startup
+	processInvestments();
 });
 
 module.exports = app;
